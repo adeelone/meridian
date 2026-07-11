@@ -30,7 +30,7 @@ meridian = "meridian_cli.__main__:app"
 packages = ["packages/core/meridian_core", "packages/cli/meridian_cli", "packages/backend/app"]
 
 [tool.pytest.ini_options]
-pythonpath = ["packages/core", "packages/cli", "packages/backend"]
+pythonpath = [".", "packages/core", "packages/cli", "packages/backend"]
 testpaths = ["tests"]
 addopts = "-p no:cacheprovider"
 
