@@ -138,6 +138,12 @@ def collections_export(name: str, fmt: str = typer.Option("markdown")) -> None:
     console.print(export_results(results, fmt))
 
 
+@collections_app.command("reorder")
+def collections_reorder(name: str, positions: str) -> None:
+    ordered = [int(item.strip()) for item in positions.split(",") if item.strip()]
+    render.payload(engine().collections.reorder(name, ordered))
+
+
 @app.command()
 def quota() -> None:
     render.payload(engine().quota_snapshot())

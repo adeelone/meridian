@@ -37,6 +37,7 @@ class SearchEngine:
         self.history = history or HistoryStore()
         self.collections = collections or CollectionStore()
         self.answerer = answerer or AnswerSynthesizer()
+        self.last_autoprompt: str | None = None
 
     @property
     def client(self) -> Any:
@@ -90,6 +91,16 @@ class SearchEngine:
             return payload.get("results") or []
         return getattr(payload, "results", [])
 
+    def _remember_autoprompt(self, payload: Any) -> None:
+        if isinstance(payload, dict):
+            autoprompt = payload.get("autoprompt_string") or payload.get("autopromptString")
+            if autoprompt:
+                self.last_autoprompt = autoprompt
+            return
+        autoprompt = getattr(payload, "autoprompt_string", None) or getattr(payload, "autopromptString", None)
+        if autoprompt:
+            self.last_autoprompt = autoprompt
+
     @staticmethod
     def _serialize_payload(payload: Any) -> dict | list:
         if isinstance(payload, (dict, list)):
@@ -110,9 +121,11 @@ class SearchEngine:
 
         def call() -> dict | list:
             payload = self.client.search(query, **search_filters.exa_kwargs())
+            self._remember_autoprompt(payload)
             return self._serialize_payload(payload)
 
         payload = self._cached("search", query, search_filters, call)
+        self._remember_autoprompt(payload)
         results = [SearchResult.from_exa(item) for item in self._extract_results(payload)]
         self.history.add(query, search_filters.normalized_payload(), len(results))
         return results
@@ -125,9 +138,11 @@ class SearchEngine:
 
         def call() -> dict | list:
             payload = self.client.search_and_contents(query, **search_filters.exa_kwargs())
+            self._remember_autoprompt(payload)
             return self._serialize_payload(payload)
 
         payload = self._cached("search_and_contents", query, search_filters, call)
+        self._remember_autoprompt(payload)
         results = [SearchResult.from_exa(item) for item in self._extract_results(payload)]
         self.history.add(query, search_filters.normalized_payload(), len(results))
         return results

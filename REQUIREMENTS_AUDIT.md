@@ -4,8 +4,8 @@ Source: `C:\Users\adeem\Downloads\meridian-codex-prompt.md`
 
 ## Summary
 
-- PASS: 29
-- PARTIAL: 7
+- PASS: 33
+- PARTIAL: 3
 - FAIL: 0
 
 ## Results
@@ -33,6 +33,7 @@ Source: `C:\Users\adeem\Downloads\meridian-codex-prompt.md`
 | History | PASS | Search history is persisted, listed, and rerunnable through API/CLI. |
 | Collections | PASS | Results can be saved to named local collections from backend, CLI, and web UI. |
 | Collection export | PASS | CLI collection export now uses Markdown, JSON, or CSV result exporters. |
+| Collection reorder | PASS | `CollectionStore.reorder`, backend route, and CLI command reorder saved items. |
 | Result export | PASS | Result lists export as Markdown, JSON, and CSV. |
 | Answer export | PASS | Answers export with source lists in Markdown, JSON, and CSV. |
 | CLI argument parsing | PASS | Typer powers search, answer, similar, history, collections, quota, cache, and REPL commands. |
@@ -47,10 +48,9 @@ Source: `C:\Users\adeem\Downloads\meridian-codex-prompt.md`
 | Testing without live Exa calls | PASS | Tests use fake clients and fixtures; CI does not require `EXA_API_KEY`. |
 | GitHub repo hygiene and CI | PASS | `.github`, Dependabot, release workflow, branch protection, and green `main` CI are in place. |
 | Full Exa category surface | PARTIAL | Current common categories are typed; automatic discovery of future SDK categories is not implemented. |
-| Autoprompt preview | PARTIAL | Toggle is wired through filters; UI does not yet display Exa's rewritten prompt separately. |
-| Reorder collection items | PARTIAL | Collection items preserve insertion order but no reorder command/UI exists yet. |
-| Web export buttons | PARTIAL | Backend export routes exist; frontend does not yet expose download/export controls. |
-| Exact sentence-level citation enforcement | PARTIAL | Citation indexes are verified, but the checker does not parse every factual sentence. |
+| Autoprompt preview | PASS | Backend preserves Exa autoprompt metadata when returned, and the web UI displays it. |
+| Web export buttons | PASS | Frontend exposes Markdown export buttons for result and answer modes. |
+| Exact sentence-level citation enforcement | PASS | Answer validation now regenerates when any generated sentence lacks a valid citation marker. |
 | Redis cache backend | PARTIAL | Backend interface exists; Redis implementation is optional and not covered in default tests. |
 | Pre-commit/Husky install flow | PARTIAL | Config files exist; hook installation depends on developers running `make install`/`npm install`. |
 
@@ -59,3 +59,6 @@ Source: `C:\Users\adeem\Downloads\meridian-codex-prompt.md`
 - Removed redundant package/class docstrings.
 - Wired the web result `Save` action to the collections API.
 - Changed CLI collection export to use the real Markdown/JSON/CSV exporters.
+- Added collection reorder support in core/backend/CLI.
+- Added web export buttons and Exa autoprompt metadata display.
+- Tightened answer verification so uncited sentences trigger regeneration.

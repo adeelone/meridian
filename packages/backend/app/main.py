@@ -30,6 +30,10 @@ class SaveRequest(BaseModel):
     note: str = ""
 
 
+class ReorderRequest(BaseModel):
+    positions: list[int]
+
+
 def safe_call(func):
     try:
         return func()
@@ -44,7 +48,12 @@ def health() -> dict:
 
 @app.post("/api/search")
 def search(request: QueryRequest) -> dict:
-    return safe_call(lambda: {"results": [item.model_dump() for item in get_engine().search_and_contents(request.query, request.filters)]})
+    def run() -> dict:
+        engine = get_engine()
+        results = engine.search_and_contents(request.query, request.filters)
+        return {"results": [item.model_dump() for item in results], "autoprompt": engine.last_autoprompt}
+
+    return safe_call(run)
 
 
 @app.post("/api/answer")
@@ -88,6 +97,11 @@ def save_collection(request: SaveRequest) -> dict:
     result = SearchResult(**request.result)
     get_engine().collections.add_result(request.collection, result, request.note)
     return {"ok": True}
+
+
+@app.post("/api/collections/{name}/reorder")
+def reorder_collection(name: str, request: ReorderRequest) -> dict:
+    return safe_call(lambda: get_engine().collections.reorder(name, request.positions))
 
 
 @app.get("/api/quota")

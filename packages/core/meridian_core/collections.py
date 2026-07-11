@@ -4,6 +4,7 @@ import json
 import sqlite3
 import time
 from pathlib import Path
+from typing import Sequence
 
 from .paths import data_path
 from .results import SearchResult
@@ -42,3 +43,18 @@ class CollectionStore:
                 (name,),
             ).fetchall()
         return {"name": name, "items": [{"position": row[0], "result": json.loads(row[1]), "note": row[2]} for row in rows]}
+
+    def reorder(self, name: str, positions: Sequence[int]) -> dict:
+        current = self.show(name)["items"]
+        by_position = {item["position"]: item for item in current}
+        if set(by_position) != set(positions):
+            raise ValueError("Reorder positions must match the collection's existing item positions.")
+        with sqlite3.connect(self.path) as db:
+            db.execute("delete from collection_items where collection_name = ?", (name,))
+            for new_position, old_position in enumerate(positions, start=1):
+                item = by_position[old_position]
+                db.execute(
+                    "insert into collection_items (collection_name, position, result_json, note) values (?, ?, ?, ?)",
+                    (name, new_position, json.dumps(item["result"]), item["note"]),
+                )
+        return self.show(name)

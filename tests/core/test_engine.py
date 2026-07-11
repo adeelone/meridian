@@ -8,6 +8,7 @@ from tests.helpers import state_dir
 
 class FakeResponse:
     results = [{"id": "1", "title": "Result", "url": "https://example.com/a", "author": None, "score": 0.9, "text": "Example text."}]
+    autoprompt_string = "rewritten query"
 
 
 class FakeClient:
@@ -51,6 +52,7 @@ def test_search_uses_normalized_filters_and_display_author() -> None:
     results = engine.search("hello", include_domains=["https://www.tiktok.com"])
     assert client.last_kwargs["include_domains"] == ["tiktok.com"]
     assert results[0].display_author == "Unknown author"
+    assert engine.last_autoprompt == "rewritten query"
 
 
 def test_cache_prevents_second_provider_call() -> None:

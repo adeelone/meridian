@@ -60,7 +60,7 @@ export function normalizeDomain(value: string): string {
 }
 
 export async function search(query: string, filters: Filters) {
-  return post<{ results: SearchResult[] }>("/api/search", { query, filters });
+  return post<{ results: SearchResult[]; autoprompt?: string }>("/api/search", { query, filters });
 }
 
 export async function answer(query: string, filters: Filters) {
@@ -85,4 +85,12 @@ export async function collections() {
 
 export async function saveToCollection(collection: string, result: SearchResult, note = "") {
   return post<{ ok: boolean }>("/api/collections", { collection, result, note });
+}
+
+export async function exportResults(query: string, filters: Filters, fmt = "markdown") {
+  return post<{ content: string }>(`/api/export/results/${fmt}`, { query, filters });
+}
+
+export async function exportAnswer(query: string, filters: Filters, fmt = "markdown") {
+  return post<{ content: string }>(`/api/export/answer/${fmt}`, { query, filters });
 }

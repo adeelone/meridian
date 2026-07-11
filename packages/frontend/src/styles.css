@@ -22,6 +22,7 @@ main { min-width: 0; padding: 18px; overflow: hidden; }
 .modes button, .tabs button, .actions button, .actions a, .chips button { border: 1px solid #d8e1df; background: white; color: #29404a; border-radius: 7px; padding: 8px 10px; cursor: pointer; text-decoration: none; }
 .modes button.selected, .tabs button.active { background: #dff7f2; border-color: #72cbbb; color: #0f5f57; }
 .tabs { display: flex; gap: 10px; padding: 16px 0; }
+.autoprompt { margin: -6px 0 14px; color: #52646d; font-size: 13px; }
 .workspace { display: grid; grid-template-columns: 230px minmax(360px, 1fr) 250px; gap: 14px; align-items: start; }
 .filters, .panel, .result-card, .answer article { background: white; border: 1px solid #dce5e3; border-radius: 8px; }
 .filters { padding: 16px; display: grid; gap: 13px; position: sticky; top: 18px; }

@@ -36,6 +36,9 @@ def test_collection_store_add_list_show() -> None:
     store = CollectionStore(state_dir("collections") / "collections.sqlite3")
     result = SearchResult(id="1", title="Title", url="https://example.com")
     store.add_result("Research", result, "note")
-    assert store.list()[0]["count"] == 1
+    store.add_result("Research", SearchResult(id="2", title="Second", url="https://example.com/2"), "")
+    assert store.list()[0]["count"] == 2
     shown = store.show("Research")
     assert shown["items"][0]["note"] == "note"
+    reordered = store.reorder("Research", [2, 1])
+    assert reordered["items"][0]["result"]["id"] == "2"

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider, useMutation, useQuery } from "@tanstack/react-query";
 import { Bookmark, Copy, ExternalLink, GitBranch, History, Library, Search, Sparkles, Zap } from "lucide-react";
-import { answer, collections, defaultFilters, Filters, history, normalizeDomain, quota, saveToCollection, search, similar, SearchResult } from "./lib/api";
+import { answer, collections, defaultFilters, exportAnswer, exportResults, Filters, history, normalizeDomain, quota, saveToCollection, search, similar, SearchResult } from "./lib/api";
 import "./styles.css";
 
 const queryClient = new QueryClient();
@@ -21,12 +21,16 @@ function Meridian() {
   const [tab, setTab] = useState<"search" | "answer">("search");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedSimilar, setSelectedSimilar] = useState<SearchResult | null>(null);
+  const [autoprompt, setAutoprompt] = useState("");
   const quotaQuery = useQuery({ queryKey: ["quota"], queryFn: quota });
   const historyQuery = useQuery({ queryKey: ["history"], queryFn: history });
   const collectionsQuery = useQuery({ queryKey: ["collections"], queryFn: collections });
   const searchMutation = useMutation({
     mutationFn: () => search(query, filters),
-    onSuccess: (payload) => setResults(payload.results)
+    onSuccess: (payload) => {
+      setResults(payload.results);
+      setAutoprompt(payload.autoprompt || "");
+    }
   });
   const answerMutation = useMutation({ mutationFn: () => answer(query, filters) });
   const similarMutation = useMutation({ mutationFn: (url: string) => similar(url, filters), onSuccess: () => null });
@@ -74,8 +78,11 @@ function Meridian() {
         <div className="tabs">
           <button className={tab === "search" ? "active" : ""} onClick={() => setTab("search")}>Results</button>
           <button className={tab === "answer" ? "active" : ""} onClick={() => setTab("answer")}>Cited answer</button>
+          <button onClick={async () => downloadText("meridian-results.md", (await exportResults(query, filters)).content)}>Export results</button>
+          <button onClick={async () => downloadText("meridian-answer.md", (await exportAnswer(query, filters)).content)}>Export answer</button>
           <button onClick={() => navigator.clipboard.writeText(shareUrl)}>Copy saved-search link</button>
         </div>
+        {filters.use_autoprompt && <div className="autoprompt">Autoprompt: {autoprompt || "Requested; Exa will return the rewritten prompt when available."}</div>}
         <section className="workspace">
           <FiltersPanel filters={filters} setFilters={setFilters} />
           <section className="results">
@@ -106,6 +113,16 @@ function Meridian() {
       </main>
     </div>
   );
+}
+
+function downloadText(filename: string, content: string) {
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }
 
 function FiltersPanel({ filters, setFilters }: { filters: Filters; setFilters: (filters: Filters) => void }) {

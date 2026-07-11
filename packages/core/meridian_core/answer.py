@@ -10,6 +10,11 @@ def citation_numbers(text: str) -> set[int]:
     return {int(match) for match in re.findall(r"\[(\d+)\]", text or "")}
 
 
+def uncited_sentences(text: str) -> list[str]:
+    sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+(?=[A-Z0-9])", text or "") if part.strip()]
+    return [sentence for sentence in sentences if citation_numbers(sentence) == set()]
+
+
 class AnswerSynthesizer:
     def __init__(self, provider: LLMProvider | None = None) -> None:
         self.provider = provider or ExtractiveLLMProvider()
@@ -26,9 +31,9 @@ class AnswerSynthesizer:
         answer = self.provider.synthesize(query, passages)
         valid = {source.index for source in sources}
         cited = citation_numbers(answer)
-        if not cited <= valid:
+        if not cited <= valid or uncited_sentences(answer):
             answer = self.provider.synthesize(query, passages, corrective=True)
             cited = citation_numbers(answer)
-        if not cited <= valid:
+        if not cited <= valid or uncited_sentences(answer):
             return AnsweredQuery(query=query, answer=answer, sources=sources, verified=False, warning="Meridian could not verify every generated citation.")
         return AnsweredQuery(query=query, answer=answer, sources=sources, verified=True)
