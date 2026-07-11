@@ -1,0 +1,12 @@
+{
+  "results": [
+    {
+      "id": "fixture-1",
+      "title": "Fixture result",
+      "url": "https://example.com/research",
+      "author": null,
+      "score": 0.91,
+      "text": "Fixture source text for recorded tests."
+    }
+  ]
+}

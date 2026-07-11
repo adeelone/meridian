@@ -1,0 +1,23 @@
+{
+  "name": "meridian",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "prepare": "husky",
+    "lint-staged": "lint-staged"
+  },
+  "devDependencies": {
+    "husky": "^9.1.4",
+    "lint-staged": "^15.2.7"
+  },
+  "lint-staged": {
+    "packages/frontend/src/**/*.{ts,tsx}": [
+      "npm --prefix packages/frontend run lint",
+      "npm --prefix packages/frontend run build"
+    ],
+    "*.py": [
+      "ruff check --fix",
+      "black"
+    ]
+  }
+}

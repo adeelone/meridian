@@ -1,0 +1,13 @@
+from __future__ import annotations
+
+from typing import Protocol
+
+
+class CacheBackend(Protocol):
+    def get(self, key: str) -> dict | list | None: ...
+
+    def set(self, key: str, value: dict | list, ttl_seconds: int) -> None: ...
+
+    def stats(self) -> dict: ...
+
+    def record_hit(self) -> None: ...
