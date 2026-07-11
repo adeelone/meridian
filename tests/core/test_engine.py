@@ -29,6 +29,10 @@ class FakeClient:
         self.calls += 1
         return FakeResponse()
 
+    def get_contents(self, ids, **kwargs):
+        self.calls += 1
+        return FakeResponse()
+
 
 def make_engine(path, client):
     return SearchEngine(
@@ -55,3 +59,19 @@ def test_cache_prevents_second_provider_call() -> None:
     engine.search("hello", include_domains=["https://www.tiktok.com"])
     engine.search("hello", include_domains=["tiktok.com"])
     assert client.calls == 1
+
+
+def test_search_and_contents_find_similar_and_get_contents() -> None:
+    client = FakeClient()
+    engine = make_engine(state_dir("engine-c"), client)
+    assert engine.search_and_contents("hello")[0].title == "Result"
+    assert engine.find_similar("https://example.com/a")[0].url == "https://example.com/a"
+    assert engine.get_contents(["1"])[0].text == "Example text."
+
+
+def test_answer_fallback_uses_retrieved_sources() -> None:
+    client = FakeClient()
+    engine = make_engine(state_dir("engine-d"), client)
+    answered = engine.answer("hello")
+    assert answered.verified is True
+    assert answered.sources[0].index == 1
