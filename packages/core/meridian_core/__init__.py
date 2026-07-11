@@ -1,5 +1,3 @@
-"""Shared Meridian search engine package."""
-
 from .engine import SearchEngine
 from .filters import SearchFilters, normalize_domain
 from .results import AnsweredQuery, SearchResult

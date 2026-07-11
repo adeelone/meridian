@@ -82,3 +82,7 @@ export async function history() {
 export async function collections() {
   return fetch("/api/collections").then((response) => response.json());
 }
+
+export async function saveToCollection(collection: string, result: SearchResult, note = "") {
+  return post<{ ok: boolean }>("/api/collections", { collection, result, note });
+}

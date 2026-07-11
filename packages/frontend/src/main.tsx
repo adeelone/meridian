@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider, useMutation, useQuery } from "@tanstack/react-query";
 import { Bookmark, Copy, ExternalLink, GitBranch, History, Library, Search, Sparkles, Zap } from "lucide-react";
-import { answer, collections, defaultFilters, Filters, history, normalizeDomain, quota, search, similar, SearchResult } from "./lib/api";
+import { answer, collections, defaultFilters, Filters, history, normalizeDomain, quota, saveToCollection, search, similar, SearchResult } from "./lib/api";
 import "./styles.css";
 
 const queryClient = new QueryClient();
@@ -30,6 +30,10 @@ function Meridian() {
   });
   const answerMutation = useMutation({ mutationFn: () => answer(query, filters) });
   const similarMutation = useMutation({ mutationFn: (url: string) => similar(url, filters), onSuccess: () => null });
+  const saveMutation = useMutation({
+    mutationFn: ({ collection, result, note }: { collection: string; result: SearchResult; note: string }) => saveToCollection(collection, result, note),
+    onSuccess: () => collectionsQuery.refetch()
+  });
 
   const run = () => {
     if (tab === "answer") answerMutation.mutate();
@@ -79,7 +83,17 @@ function Meridian() {
             {tab === "answer" ? (
               <AnswerView payload={answerMutation.data} loading={answerMutation.isPending} />
             ) : (
-              <ResultList results={results} loading={searchMutation.isPending} onSimilar={(result) => { setSelectedSimilar(result); similarMutation.mutate(result.url); }} />
+              <ResultList
+                results={results}
+                loading={searchMutation.isPending}
+                onSimilar={(result) => { setSelectedSimilar(result); similarMutation.mutate(result.url); }}
+                onSave={(result) => {
+                  const collection = window.prompt("Collection name", "Research");
+                  if (!collection) return;
+                  const note = window.prompt("Note", "") || "";
+                  saveMutation.mutate({ collection, result, note });
+                }}
+              />
             )}
           </section>
           <aside className="inspector">
@@ -118,13 +132,13 @@ function FiltersPanel({ filters, setFilters }: { filters: Filters; setFilters: (
   );
 }
 
-function ResultList({ results, loading, onSimilar }: { results: SearchResult[]; loading: boolean; onSimilar: (result: SearchResult) => void }) {
+function ResultList({ results, loading, onSimilar, onSave }: { results: SearchResult[]; loading: boolean; onSimilar: (result: SearchResult) => void; onSave: (result: SearchResult) => void }) {
   if (loading) return <div className="skeleton"><span /><span /><span /></div>;
   if (!results.length) return <div className="empty">No results yet. Run a search, or broaden domain/date filters if results come back empty.</div>;
-  return <>{results.map((result) => <ResultCard key={result.id} result={result} onSimilar={() => onSimilar(result)} />)}</>;
+  return <>{results.map((result) => <ResultCard key={result.id} result={result} onSimilar={() => onSimilar(result)} onSave={() => onSave(result)} />)}</>;
 }
 
-function ResultCard({ result, onSimilar }: { result: SearchResult; onSimilar: () => void }) {
+function ResultCard({ result, onSimilar, onSave }: { result: SearchResult; onSimilar: () => void; onSave: () => void }) {
   const author = result.author || "Unknown author";
   return (
     <article className="result-card" id={result.id}>
@@ -137,7 +151,7 @@ function ResultCard({ result, onSimilar }: { result: SearchResult; onSimilar: ()
         <div className="actions">
           <a href={result.url} target="_blank" rel="noreferrer"><ExternalLink size={15} /> Open</a>
           <button onClick={onSimilar}><GitBranch size={15} /> Similar</button>
-          <button><Bookmark size={15} /> Save</button>
+          <button onClick={onSave}><Bookmark size={15} /> Save</button>
           <button onClick={() => navigator.clipboard.writeText(`${result.title} - ${result.url}`)}><Copy size={15} /> Copy citation</button>
         </div>
       </div>

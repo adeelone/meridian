@@ -9,6 +9,8 @@ from rich.console import Console
 
 from meridian_core import SearchEngine, SearchFilters
 from meridian_core.errors import MeridianError
+from meridian_core.export import export_results
+from meridian_core.results import SearchResult
 
 from . import render
 
@@ -132,8 +134,8 @@ def collections_show(name: str) -> None:
 @collections_app.command("export")
 def collections_export(name: str, fmt: str = typer.Option("markdown")) -> None:
     collection = engine().collections.show(name)
-    results = [item["result"] for item in collection["items"]]
-    render.payload({"format": fmt, "items": results})
+    results = [SearchResult(**item["result"]) for item in collection["items"]]
+    console.print(export_results(results, fmt))
 
 
 @app.command()

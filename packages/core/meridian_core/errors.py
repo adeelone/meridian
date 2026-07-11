@@ -1,5 +1,5 @@
 class MeridianError(Exception):
-    """Base user-safe Meridian exception."""
+    pass
 
 
 class ConfigurationError(MeridianError):
