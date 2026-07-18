@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from meridian_core import SearchFilters
@@ -11,7 +16,19 @@ from meridian_core.export import export_answer, export_results
 from .core_config import get_engine
 
 app = FastAPI(title="Meridian API", version="0.1.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+
+def cors_origins() -> list[str]:
+    configured = os.getenv("MERIDIAN_CORS_ORIGINS", "http://127.0.0.1:5173,http://localhost:5173")
+    return [origin.strip() for origin in configured.split(",") if origin.strip()]
+
+
+app.add_middleware(CORSMiddleware, allow_origins=cors_origins(), allow_methods=["*"], allow_headers=["*"])
+
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+ASSETS_DIR = FRONTEND_DIST / "assets"
+if ASSETS_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
 
 class QueryRequest(BaseModel):
@@ -124,3 +141,14 @@ def export_result_list(fmt: str, request: QueryRequest) -> dict:
 def export_answer_view(fmt: str, request: QueryRequest) -> dict:
     answered = safe_call(lambda: get_engine().answer(request.query, request.filters))
     return {"content": export_answer(answered, fmt)}
+
+
+@app.get("/")
+@app.get("/{path:path}")
+def frontend(path: str = "") -> FileResponse:
+    if not FRONTEND_DIST.exists():
+        raise HTTPException(status_code=404, detail="Frontend build not found. Run `npm run build` in packages/frontend.")
+    requested = (FRONTEND_DIST / path).resolve()
+    if requested.is_file() and FRONTEND_DIST.resolve() in requested.parents:
+        return FileResponse(requested)
+    return FileResponse(FRONTEND_DIST / "index.html")

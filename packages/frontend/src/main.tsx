@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider, useMutation, useQuery } from "@tanstack/react-query";
 import { Bookmark, Copy, ExternalLink, GitBranch, History, Library, Search, Sparkles, Zap } from "lucide-react";
-import { answer, collections, defaultFilters, exportAnswer, exportResults, Filters, history, normalizeDomain, quota, saveToCollection, search, similar, SearchResult } from "./lib/api";
+import { answer, collections, defaultFilters, exportAnswer, exportResults, Filters, history, normalizeDomain, quota, QuotaSnapshot, saveToCollection, search, similar, SearchResult } from "./lib/api";
 import "./styles.css";
 
 const queryClient = new QueryClient();
@@ -106,8 +106,8 @@ function Meridian() {
           <aside className="inspector">
             <QuotaPanel quota={quotaQuery.data} />
             {selectedSimilar && <SimilarityPanel result={selectedSimilar} results={similarMutation.data?.results || []} loading={similarMutation.isPending} />}
-            <MiniPanel title="Collections" items={(collectionsQuery.data?.items || []).map((item: any) => `${item.name} (${item.count})`)} />
-            <MiniPanel title="History" items={(historyQuery.data?.items || []).slice(0, 5).map((item: any) => `${item.query} - ${item.result_count}`)} />
+            <MiniPanel title="Collections" items={(collectionsQuery.data?.items || []).map((item) => `${item.name} (${item.count})`)} />
+            <MiniPanel title="History" items={(historyQuery.data?.items || []).slice(0, 5).map((item) => `${item.query} - ${item.result_count}`)} />
           </aside>
         </section>
       </main>
@@ -182,7 +182,7 @@ function AnswerView({ payload, loading }: { payload?: { answer: string; sources:
   return <div className="answer"><p>{payload.answer}</p>{payload.warning && <div className="warning">{payload.warning}</div>}<h3>Sources</h3>{payload.sources.map((source) => <article key={source.index} id={`source-${source.index}`}><strong>[{source.index}] {source.title}</strong><a href={source.url}>{source.url}</a><p>{source.snippet}</p></article>)}</div>;
 }
 
-function QuotaPanel({ quota }: { quota?: any }) {
+function QuotaPanel({ quota }: { quota?: QuotaSnapshot }) {
   const percent = quota ? Math.round((quota.remaining / quota.limit) * 100) : 100;
   return <section className="panel"><h2>Quota</h2><strong>{quota?.remaining ?? "..."}</strong><span>requests remaining</span><div className="meter"><i style={{ width: `${percent}%` }} /></div><small>{quota?.used_today ?? 0} used today · {quota?.cache_hits_today ?? 0} cache hits</small>{quota?.warning && <div className="warning">{quota.warning}</div>}</section>;
 }

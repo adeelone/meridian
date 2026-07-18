@@ -4,7 +4,7 @@ Source: `C:\Users\adeem\Downloads\meridian-codex-prompt.md`
 
 ## Summary
 
-- PASS: 33
+- PASS: 36
 - PARTIAL: 3
 - FAIL: 0
 
@@ -47,6 +47,9 @@ Source: `C:\Users\adeem\Downloads\meridian-codex-prompt.md`
 | API mapping docs | PASS | `API.md` maps Python SDK snake_case to REST camelCase fields. |
 | Testing without live Exa calls | PASS | Tests use fake clients and fixtures; CI does not require `EXA_API_KEY`. |
 | GitHub repo hygiene and CI | PASS | `.github`, Dependabot, release workflow, branch protection, and green `main` CI are in place. |
+| Production Docker deployment | PASS | `Dockerfile` and `compose.yml` build the React app, install the Python service, persist `/data`, and serve API plus UI from one container. |
+| Production CORS controls | PASS | `MERIDIAN_CORS_ORIGINS` replaces unconditional wildcard CORS for browser deployments. |
+| Frontend lint script | PASS | ESLint 9 flat config is present and `npm run lint` validates TS/TSX source. |
 | Full Exa category surface | PARTIAL | Current common categories are typed; automatic discovery of future SDK categories is not implemented. |
 | Autoprompt preview | PASS | Backend preserves Exa autoprompt metadata when returned, and the web UI displays it. |
 | Web export buttons | PASS | Frontend exposes Markdown export buttons for result and answer modes. |
@@ -62,3 +65,4 @@ Source: `C:\Users\adeem\Downloads\meridian-codex-prompt.md`
 - Added collection reorder support in core/backend/CLI.
 - Added web export buttons and Exa autoprompt metadata display.
 - Tightened answer verification so uncited sentences trigger regeneration.
+- Added a Docker production path, same-origin frontend serving from FastAPI, configurable CORS, and a working ESLint 9 frontend lint configuration.

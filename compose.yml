@@ -1,0 +1,15 @@
+services:
+  meridian:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      MERIDIAN_HOME: /data
+      MERIDIAN_CORS_ORIGINS: ""
+    volumes:
+      - meridian-data:/data
+
+volumes:
+  meridian-data:

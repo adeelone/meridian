@@ -15,6 +15,25 @@ export const resultSchema = z.object({
 
 export type SearchResult = z.infer<typeof resultSchema>;
 
+export type QuotaSnapshot = {
+  limit: number;
+  used_today: number;
+  remaining: number;
+  cache_hits_today: number;
+  warning?: string;
+};
+
+export type HistoryItem = {
+  id: number;
+  query: string;
+  result_count: number;
+};
+
+export type CollectionSummary = {
+  name: string;
+  count: number;
+};
+
 export type Filters = {
   num_results: number;
   type: "neural" | "keyword" | "auto";
@@ -72,15 +91,15 @@ export async function similar(url: string, filters: Filters) {
 }
 
 export async function quota() {
-  return fetch("/api/quota").then((response) => response.json());
+  return fetch("/api/quota").then((response) => response.json() as Promise<QuotaSnapshot>);
 }
 
 export async function history() {
-  return fetch("/api/history").then((response) => response.json());
+  return fetch("/api/history").then((response) => response.json() as Promise<{ items: HistoryItem[] }>);
 }
 
 export async function collections() {
-  return fetch("/api/collections").then((response) => response.json());
+  return fetch("/api/collections").then((response) => response.json() as Promise<{ items: CollectionSummary[] }>);
 }
 
 export async function saveToCollection(collection: string, result: SearchResult, note = "") {

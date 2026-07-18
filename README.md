@@ -9,10 +9,13 @@ It turns the single-query Exa tutorial into a reusable product surface: neural, 
 ```bash
 python -m pip install -e ".[dev]"
 cd packages/frontend && npm install
-copy .env.example .env
+cd ../..
+cp .env.example .env
 set EXA_API_KEY=your_exa_key
 make dev
 ```
+
+On Windows PowerShell, use `copy .env.example .env` and `$env:EXA_API_KEY="your_exa_key"`.
 
 CLI:
 
@@ -40,6 +43,34 @@ make test
 make lint
 make typecheck
 ```
+
+## Production build
+
+Build the web app, then run FastAPI from the repository root:
+
+```bash
+cd packages/frontend && npm ci && npm run build
+cd ../..
+python -m pip install .
+MERIDIAN_CORS_ORIGINS= python -m uvicorn app.main:app --app-dir packages/backend --host 0.0.0.0 --port 8000
+```
+
+When `packages/frontend/dist` exists, the backend serves the React app at `/` and the API at `/api/*`.
+
+Docker:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Required production environment:
+
+- `EXA_API_KEY`: required for live Exa search, contents, similar, and answer endpoint calls.
+- `MERIDIAN_HOME`: optional persistent data directory; defaults to platform local app data outside Docker and `/data` in Docker.
+- `MERIDIAN_CORS_ORIGINS`: comma-separated browser origins for separate frontend/backend deployments. Leave empty for same-origin Docker deployment.
+- `LLM_API_KEY`: optional, only needed if using the OpenAI-compatible synthesis provider.
+- `REDIS_URL`: optional, only needed if wiring the Redis cache backend.
 
 ## Adding filters
 
