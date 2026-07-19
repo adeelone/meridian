@@ -1,6 +1,6 @@
 # Requirements Audit
 
-Source: `C:\Users\adeem\Downloads\meridian-codex-prompt.md`
+Source: `meridian-codex-prompt.md`
 
 ## Summary
 
